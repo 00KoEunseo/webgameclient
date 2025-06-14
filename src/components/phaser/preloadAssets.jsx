@@ -8,4 +8,6 @@ export default function preloadAssets(scene) {
     frameWidth: 16,
     frameHeight: 16,
   });
+
+  scene.load.image('tutorial', '/sprites/toriel.png');
 }

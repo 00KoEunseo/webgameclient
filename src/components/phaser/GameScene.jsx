@@ -41,6 +41,11 @@ export default class GameScene extends Phaser.Scene {
 
     this.otherPlayers = this.add.group();
     this.isOverPortal = false;
+    const centerX = this.cameras.main.width / 2;
+    const centerY = this.cameras.main.height / 2;
+
+    this.tutorialImage = this.add.image(centerX, centerY, 'tutorial');
+    this.tutorialImage.setOrigin(0.5); // 이미지 기준점을 중앙으로 설정
 
     this.physics.add.overlap(this.player, this.portals, () => {
       this.isOverPortal = true;
