@@ -29,7 +29,12 @@ export default class GameScene extends Phaser.Scene {
       left: Phaser.Input.Keyboard.KeyCodes.LEFT,
       right: Phaser.Input.Keyboard.KeyCodes.RIGHT,
       jump: Phaser.Input.Keyboard.KeyCodes.UP,
-      usepotal: Phaser.Input.Keyboard.KeyCodes.DOWN,
+      useportal: Phaser.Input.Keyboard.KeyCodes.DOWN,
+      hook:Phaser.Input.Keyboard.KeyCodes.SPACE
+    });
+
+    this.keys.hook.on('down', () => {
+      this.isHookActive = !this.isHookActive;  // 토글 반전
     });
 
     this.ground = createGround(this);
@@ -37,6 +42,7 @@ export default class GameScene extends Phaser.Scene {
     this.portals.push(createPortal(this, this.ground, 46, 0, 'portal'));
 
     this.player = createPlayer(this, this.spawnX, this.spawnY);
+    
     this.physics.add.collider(this.player, this.ground);
 
     this.otherPlayers = this.add.group();
@@ -49,6 +55,7 @@ export default class GameScene extends Phaser.Scene {
 
     this.physics.add.overlap(this.player, this.portals, () => {
       this.isOverPortal = true;
+      //console.log("포탈겹치기!")
     });
 
     setupSocket(this);

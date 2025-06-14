@@ -7,6 +7,18 @@ export default function setupSocket(scene) {
   const addOtherPlayer = (id, info) => {
     if (otherPlayersRef[id]) return;
     const other = scene.physics.add.sprite(info.x, info.y, 'character');
+
+    // 충돌 박스 설정 (createPlayer와 동일하게)
+    const bodyWidth = 16;    // 10px 줄인 너비
+    const bodyHeight = 35;
+    const spriteWidth = 32;
+    const spriteHeight = 48;
+    const offsetX = (spriteWidth - bodyWidth) / 2;  // 5
+    const offsetY = spriteHeight - bodyHeight;      // 8
+
+    other.body.setSize(bodyWidth, bodyHeight);
+    other.body.setOffset(offsetX, offsetY);
+
     other.anims.play(info.anim || 'idle');
     other.flipX = info.flipX || false;
     otherPlayers.add(other);
@@ -19,6 +31,11 @@ export default function setupSocket(scene) {
     other.setPosition(info.x, info.y);
     other.anims.play(info.anim || 'idle', true);
     other.flipX = info.flipX || false;
+
+    // offsetX, offsetY가 있으면 반영
+    if (typeof info.offsetX === 'number' && typeof info.offsetY === 'number') {
+      other.body.setOffset(info.offsetX, info.offsetY);
+    }
   };
 
   const removeOtherPlayer = (id) => {

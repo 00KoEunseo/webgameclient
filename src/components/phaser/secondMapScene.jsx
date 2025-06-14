@@ -25,16 +25,18 @@ export default class SecondMapScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#228B22');
 
     this.keys = this.input.keyboard.addKeys({
-        left: Phaser.Input.Keyboard.KeyCodes.LEFT,
-        right: Phaser.Input.Keyboard.KeyCodes.RIGHT,
-        jump: Phaser.Input.Keyboard.KeyCodes.UP,
-        usepotal: Phaser.Input.Keyboard.KeyCodes.DOWN,
+      left: Phaser.Input.Keyboard.KeyCodes.LEFT,
+      right: Phaser.Input.Keyboard.KeyCodes.RIGHT,
+      jump: Phaser.Input.Keyboard.KeyCodes.UP,
+      useportal: Phaser.Input.Keyboard.KeyCodes.DOWN,
+      hook:Phaser.Input.Keyboard.KeyCodes.SPACE
+    });
+
+    this.keys.hook.on('down', () => {
+      this.isHookActive = !this.isHookActive;  // 토글 반전
     });
 
     this.ground = createGround(this);
-    console.log('땅생성!');
-
-    // 포탈 여러개 관리하는 배열
     this.portals = [];
     this.portals.push(createPortal(this, this.ground, 4, 0, 'portal2',{x:720,y:360}));
 

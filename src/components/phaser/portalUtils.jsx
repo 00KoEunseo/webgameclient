@@ -10,7 +10,7 @@ export function createGround(scene) {
     const tile = scene.add.sprite(x, groundY, 'tiles', 0);
     scene.physics.add.existing(tile, true);
     tile.body.setSize(tileWidth, tileHeight);
-    tile.body.setOffset(0, tileHeight / 2);
+    tile.body.setOffset(0);
     ground.add(tile);
   }
 
@@ -47,6 +47,7 @@ export function checkOverPortal(scene) {
     if (scene.physics.overlap(scene.player, portal)) {
       scene.isOverPortal = true;
       scene.currentPortalName = portal.name;
+      //console.log('포탈 이름:', scene.currentPortalName);
       break; // 한 번 발견하면 루프 종료
     }
   }
