@@ -39,15 +39,19 @@ export default class FishingResultScene extends Phaser.Scene {
 
     let speedMin, speedMax;
     if (size <= 5) {
-      speedMin = 10;
-      speedMax = 50;
-    } else if (size >= 300) {
-      speedMin = 200;
-      speedMax = 400;
+    speedMin = 10;
+    speedMax = 50;
+    } else if (size < 300) {
+    const t = (size - 5) / (300 - 5); // 0 ~ 1
+    speedMin = lerp(10, 200, t);
+    speedMax = lerp(50, 400, t);
+    } else if (size < 500) {
+    const t = (size - 300) / (500 - 300); // 0 ~ 1
+    speedMin = lerp(200, 400, t);
+    speedMax = lerp(400, 750, t);
     } else {
-      const t = (size - 5) / (300 - 5);
-      speedMin = lerp(10, 200, t);
-      speedMax = lerp(50, 400, t);
+    speedMin = 400;
+    speedMax = 750;
     }
 
     let markerSpeed = Phaser.Math.Between(speedMin, speedMax);

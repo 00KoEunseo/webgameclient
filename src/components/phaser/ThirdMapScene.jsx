@@ -7,9 +7,9 @@ import UIManager from './UIManager';
 
 import { createGround, createPortal, checkOverPortal, createGround2 } from './portalUtils';
 
-export default class SecondMapScene extends Phaser.Scene {
+export default class ThirdMapScene extends Phaser.Scene {
   constructor() {
-    super('SecondMapScene');
+    super('ThirdMapScene');
     this.otherPlayersRef = {};
     this.socketId = null;
 
@@ -19,37 +19,42 @@ export default class SecondMapScene extends Phaser.Scene {
     this.isHookActive = false;
     this.hookTimerStarted = false;
     this.isMiniGameActive = false;
-    this.fishDatabase2 = [
-      { name: '백상아리', minSize: 150, maxSize: 300, pricePerCm: 200 },
-      { name: '큰귀상어', minSize: 130, maxSize: 260, pricePerCm: 175 },
-      { name: '고래상어', minSize: 200, maxSize: 300, pricePerCm: 225 },
-      { name: '청상아리', minSize: 140, maxSize: 280, pricePerCm: 190 },
-      { name: '망치상어', minSize: 120, maxSize: 250, pricePerCm: 185 },
-      { name: '가오리', minSize: 110, maxSize: 220, pricePerCm: 160 },
-      { name: '황색무늬가오리', minSize: 130, maxSize: 240, pricePerCm: 170 },
-      { name: '아마존 대형메기', minSize: 110, maxSize: 200, pricePerCm: 145 },
-      { name: '피라루크', minSize: 150, maxSize: 280, pricePerCm: 180 },
-      { name: '벨루가', minSize: 160, maxSize: 300, pricePerCm: 190 },
-      { name: '흰긴수염고래', minSize: 180, maxSize: 300, pricePerCm: 210 },
-      { name: '흑동가오리', minSize: 120, maxSize: 220, pricePerCm: 155 },
-      { name: '개복치', minSize: 150, maxSize: 300, pricePerCm: 200 },
-      { name: '골리앗 그루퍼', minSize: 120, maxSize: 250, pricePerCm: 175 },
-      { name: '고블린샤크', minSize: 130, maxSize: 260, pricePerCm: 195 },
-      { name: '대왕볼락', minSize: 140, maxSize: 240, pricePerCm: 170 },
-      { name: '흰수염고래', minSize: 200, maxSize: 300, pricePerCm: 250 },
-      { name: '청새치', minSize: 130, maxSize: 270, pricePerCm: 190 },
-      { name: '청멸치', minSize: 5, maxSize: 15, pricePerCm: 60 },
-      { name: '모래무지', minSize: 4, maxSize: 12, pricePerCm: 50 },
-      { name: '베타피시', minSize: 3, maxSize: 7, pricePerCm: 70 },
-      { name: '미꾸라지', minSize: 6, maxSize: 18, pricePerCm: 45 },
-      { name: '송사리', minSize: 1, maxSize: 2, pricePerCm: 55 },
-      { name: '피라냐', minSize: 10, maxSize: 20, pricePerCm: 100 },
-      // 쓰레기
-      { name: '낡은 장화', minSize: 10, maxSize: 10, pricePerCm: 0 },
-      { name: '녹슨 캔', minSize: 10, maxSize: 10, pricePerCm: 0 },
-      { name: '찢어진 우산', minSize: 10, maxSize: 10, pricePerCm: 0 },
-      { name: '플라스틱 병', minSize: 10, maxSize: 10, pricePerCm: 0 },
-      { name: '고무 타이어 조각', minSize: 10, maxSize: 10, pricePerCm: 0 },
+    this.fishDatabase3 = [
+    // 대형 물고기 (크기 220 ~ 400)
+    { name: '범고래', minSize: 220, maxSize: 400, pricePerCm: 300 },
+    { name: '대서양참다랑어', minSize: 230, maxSize: 380, pricePerCm: 280 },
+    { name: '청새치', minSize: 220, maxSize: 360, pricePerCm: 270 },
+    { name: '대왕오징어', minSize: 250, maxSize: 390, pricePerCm: 320 },
+    { name: '가오리 (대형)', minSize: 230, maxSize: 370, pricePerCm: 260 },
+    { name: '고래상어 (대형)', minSize: 280, maxSize: 400, pricePerCm: 350 },
+    { name: '대왕고래상어', minSize: 300, maxSize: 400, pricePerCm: 400 },
+    { name: '참다랑어', minSize: 220, maxSize: 350, pricePerCm: 290 },
+    { name: '청상어 (대형)', minSize: 240, maxSize: 390, pricePerCm: 310 },
+    { name: '백상아리 (대형)', minSize: 260, maxSize: 400, pricePerCm: 330 },
+    { name: '대왕볼락 (대형)', minSize: 230, maxSize: 370, pricePerCm: 280 },
+    { name: '흰긴수염고래 (대형)', minSize: 1500, maxSize: 3300, pricePerCm: 3600 }, //오타아님ㅋ
+    { name: '황새치', minSize: 220, maxSize: 360, pricePerCm: 275 },
+    { name: '검은망둥어', minSize: 225, maxSize: 375, pricePerCm: 265 },
+    { name: '큰귀상어 (대형)', minSize: 240, maxSize: 380, pricePerCm: 290 },
+    { name: '대왕가오리', minSize: 250, maxSize: 400, pricePerCm: 310 },
+    { name: '아르헨티나 가오리', minSize: 220, maxSize: 350, pricePerCm: 260 },
+    { name: '벨루가 (대형)', minSize: 270, maxSize: 400, pricePerCm: 320 },
+    { name: '백상아리 (초대형)', minSize: 300, maxSize: 400, pricePerCm: 370 },
+    { name: '흰수염고래 (초대형)', minSize: 320, maxSize: 400, pricePerCm: 380 },
+    { name: '대왕고래', minSize: 350, maxSize: 400, pricePerCm: 400 },
+    { name: '고래상어 (초대형)', minSize: 300, maxSize: 400, pricePerCm: 390 },
+
+    // 소형 물고기 (크기 1 ~ 10)
+    { name: '카디널피시', minSize: 1, maxSize: 5, pricePerCm: 40 },
+    { name: '네온테트라', minSize: 2, maxSize: 6, pricePerCm: 50 },
+    { name: '구피', minSize: 3, maxSize: 7, pricePerCm: 60 },
+
+    // 쓰레기 (크기 10 고정, 가격 0)
+    { name: '낡은 장화', minSize: 10, maxSize: 10, pricePerCm: 0 },
+    { name: '녹슨 캔', minSize: 10, maxSize: 10, pricePerCm: 0 },
+    { name: '찢어진 우산', minSize: 10, maxSize: 10, pricePerCm: 0 },
+    { name: '플라스틱 병', minSize: 10, maxSize: 10, pricePerCm: 0 },
+    { name: '고무 타이어 조각', minSize: 10, maxSize: 10, pricePerCm: 0 },
     ];
   }
 
@@ -64,7 +69,7 @@ export default class SecondMapScene extends Phaser.Scene {
   }
 
   create() {
-    this.cameras.main.setBackgroundColor('#00008B');
+    this.cameras.main.setBackgroundColor('#8B0000');
 
     this.keys = this.input.keyboard.addKeys({
       left: Phaser.Input.Keyboard.KeyCodes.LEFT,
@@ -88,8 +93,7 @@ export default class SecondMapScene extends Phaser.Scene {
 
     this.ground = createGround2(this);
     this.portals = [];
-    this.portals.push(createPortal(this, this.ground, 4, 0, 'portal2', { x: 720, y: 360 }));
-    this.portals.push(createPortal(this, this.ground, 45, 0, 'portal3'));
+    this.portals.push(createPortal(this, this.ground, 4, 0, 'portal4', { x: 720, y: 360 }));
 
     this.player = createPlayer(this, this.spawnX, this.spawnY);
     this.physics.add.collider(this.player, this.ground);
@@ -142,7 +146,7 @@ export default class SecondMapScene extends Phaser.Scene {
           this.input.keyboard.enabled = false;
           this.scene.launch('FishingResultScene', {
             fishData,
-            returnSceneKey: 'SecondMapScene'  // 여기서 복귀할 씬 이름 지정
+            returnSceneKey: 'ThirdMapScene'  // 여기서 복귀할 씬 이름 지정
           });
         }
       };
@@ -167,7 +171,7 @@ export default class SecondMapScene extends Phaser.Scene {
 
     // 물고기 랜덤 선택 함수
     this.getRandomFish = () => {
-      const fish = Phaser.Math.RND.pick(this.fishDatabase2);
+      const fish = Phaser.Math.RND.pick(this.fishDatabase3);
       const size = Phaser.Math.Between(fish.minSize, fish.maxSize);
 
       let price = 0;

@@ -150,6 +150,16 @@ export default function handleInput(scene, player, keys, isOverPortal) {
         spawnX: currentPortal.destination?.x || 100,
         spawnY: currentPortal.destination?.y || 360,
       });
+    } else if (scene.currentPortalName === 'portal3') {
+      scene.scene.start('ThirdMapScene', {
+        spawnX: currentPortal.destination?.x || 100,
+        spawnY: currentPortal.destination?.y || 360,
+      });
+    } else if (scene.currentPortalName === 'portal4') {
+      scene.scene.start('SecondMapScene', {
+        spawnX: currentPortal.destination?.x || 100,
+        spawnY: currentPortal.destination?.y || 360,
+      });
     }
   }
 }
