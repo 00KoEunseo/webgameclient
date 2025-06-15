@@ -133,53 +133,60 @@ export default class GameScene extends Phaser.Scene {
     let exclamationShown = false;
     let exclamation;
     let failTimer;
-    let earlyFailed = false;
+    let hookTimer; // ← 이걸 저장해서 나중에 취소
 
-    const waitTime = Phaser.Math.Between(5000, 8000);
-
-    // SPACE를 미리 누르면 즉시 낚시 실패 처리
-    const earlyKeyListener = this.input.keyboard.once('keydown-SPACE', () => {
+    const spaceHandler = () => {
+      // 너무 빠름: 느낌표 뜨기 전 SPACE 입력
       if (!exclamationShown && !this.isMiniGameActive) {
         console.log("낚시 실패 (너무 빠름)");
         this.isFishingCount = true;
         this.hookTimerStarted = false;
-        earlyFailed = true; // 조기 실패 표시
+        
+        // 타이머 제거
+        hookTimer?.remove(false);
+        this.input.keyboard.off('keydown-SPACE', spaceHandler);
+        return;
       }
-    });
 
-    this.time.delayedCall(waitTime, () => {
-      // 조기 실패했으면 아무 것도 하지 않음
-      if (earlyFailed) return;
-
-      exclamationShown = true;
-      exclamation = this.add.sprite(this.player.x, this.player.y - 20, 'gacha').setScrollFactor(0);
-
-      // 실패 타이머 시작
-      failTimer = this.time.delayedCall(1500, () => {
+      // 정타 입력
+      if (exclamationShown && !this.isMiniGameActive) {
+        console.log("낚시 성공!");
+        this.isMiniGameActive = true;
         exclamation?.destroy();
+        failTimer?.remove(false);
+
+        const fishData = this.getRandomFish();
+        this.scene.launch('FishingResultScene', fishData);
+
+        this.isMiniGameActive = false;
         this.isFishingCount = true;
         this.hookTimerStarted = false;
+
+        this.input.keyboard.off('keydown-SPACE', spaceHandler);
+      }
+    };
+
+    this.input.keyboard.on('keydown-SPACE', spaceHandler);
+
+    const waitTime = Phaser.Math.Between(5000, 8000);
+
+    // 느낌표 표시 예약 (이걸 실패 시 취소해야 함)
+    hookTimer = this.time.delayedCall(waitTime, () => {
+      exclamationShown = true;
+      exclamation = this.add
+        .sprite(this.player.x, this.player.y - 20, 'gacha')
+        .setScrollFactor(0);
+
+      failTimer = this.time.delayedCall(1500, () => {
+        exclamation?.destroy();
         console.log("낚시 실패 (시간초과)");
-      });
-
-      // 낚시 성공 시 처리
-      this.input.keyboard.once('keydown-SPACE', () => {
-        if (!this.isMiniGameActive && exclamationShown) {
-          console.log("낚시 성공!");
-          this.isMiniGameActive = true;
-          exclamation?.destroy();
-          failTimer?.remove(false);
-
-          const fishData = this.getRandomFish();
-          this.scene.launch('FishingResultScene', fishData);
-
-          this.isMiniGameActive = false;
-          this.isFishingCount = true;
-          this.hookTimerStarted = false;
-        }
+        this.isFishingCount = true;
+        this.hookTimerStarted = false;
+        this.input.keyboard.off('keydown-SPACE', spaceHandler);
       });
     }, [], this);
   }
+
   update() {
     this.isOverPortal = false;
     checkOverPortal(this);
