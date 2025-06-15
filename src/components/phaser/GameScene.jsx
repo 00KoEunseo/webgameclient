@@ -4,6 +4,8 @@ import createPlayer from './createPlayer';
 import setupSocket from './setupSocket';
 import handleInput from './handleInput';
 import { createGround, createPortal, checkOverPortal } from './portalUtils';
+import gameData from './GameData';
+import UIManager from './UIManager';
 import socket from '../socket';
 
 export default class GameScene extends Phaser.Scene {
@@ -63,8 +65,16 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
+    // UIManager 생성
+    this.uiManager = new UIManager(this);
 
-    
+    // 인벤토리에 게임데이터 연동
+    this.uiManager.inventoryManager.refreshList();
+
+    // 인벤토리 열기/닫기 (E 키 또는 가방 아이콘 누름 시)
+    this.input.keyboard.on('keydown-E', () => {
+      this.uiManager.inventoryManager.toggle();
+    });
 
     this.cameras.main.setBackgroundColor('#87CEEB');
 
@@ -156,13 +166,18 @@ export default class GameScene extends Phaser.Scene {
         failTimer?.remove(false);
 
         const fishData = this.getRandomFish();
-        this.scene.launch('FishingResultScene', fishData);
 
         this.isMiniGameActive = false;
         this.isFishingCount = true;
         this.hookTimerStarted = false;
 
         this.input.keyboard.off('keydown-SPACE', spaceHandler);
+        this.input.keyboard.enabled = false;
+        this.scene.launch('FishingResultScene', {
+          fishData,
+          returnSceneKey: 'GameScene'
+        });
+
       }
     };
 

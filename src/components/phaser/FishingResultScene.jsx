@@ -1,38 +1,137 @@
+import gameData from './GameData';
+
 export default class FishingResultScene extends Phaser.Scene {
   constructor() {
     super({ key: 'FishingResultScene' });
   }
 
   init(data) {
-    // data: { fishName, size, price }
-    this.fishName = data.fishName || '알 수 없음';
-    this.size = data.size || '0 cm';
-    this.price = data.price || '0 원';
-  }
-
-  preload() {
-    // 필요한 이미지가 있다면 preload
+    this.fishData = data.fishData;
+    this.returnSceneKey = data.returnSceneKey || 'GameScene'; // 기본값 GameScene
   }
 
   create() {
-    // 반투명 배경 (씬 전체 덮기)
-    this.bg = this.add.rectangle(0, 0, this.sys.game.config.width, this.sys.game.config.height, 0x000000, 0)
+    this.bg = this.add.rectangle(0, 0, this.sys.game.config.width, this.sys.game.config.height, 0x000000, 0.5)
       .setOrigin(0, 0);
 
-    // UI 박스
+    this.startMiniGame();
+  }
+
+  startMiniGame() {
+    const barX = this.sys.game.config.width / 2;
+    const barY = this.sys.game.config.height / 2;
+    const barHeight = 200;
+    const barWidth = 20;
+
+    const bar = this.add.rectangle(barX, barY, barWidth, barHeight, 0xaaaaaa).setOrigin(0.5);
+    const successZone = this.add.rectangle(barX, barY, barWidth, 40, 0x00ff00).setOrigin(0.5);
+    const marker = this.add.rectangle(barX, barY, barWidth, 10, 0xff0000).setOrigin(0.5);
+
+    let gauge = 50;
+    const gaugeBarBg = this.add.rectangle(barX + 100, barY, 10, barHeight, 0x444444).setOrigin(0.5);
+    const gaugeBar = this.add.rectangle(barX + 100, barY + barHeight / 2 - (barHeight * (gauge / 100)), 10, barHeight * (gauge / 100), 0x00ffff).setOrigin(0.5, 1);
+
+    const size = parseFloat(this.fishData.size);
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    let speedMin, speedMax;
+    if (size <= 5) {
+      speedMin = 10;
+      speedMax = 50;
+    } else if (size >= 300) {
+      speedMin = 200;
+      speedMax = 400;
+    } else {
+      const t = (size - 5) / (300 - 5);
+      speedMin = lerp(10, 200, t);
+      speedMax = lerp(50, 400, t);
+    }
+
+    let markerSpeed = Phaser.Math.Between(speedMin, speedMax);
+    let markerDir = Phaser.Math.Between(0, 1) === 0 ? -1 : 1;
+    const directionChangeProbability = 0.02;
+
+    let successZoneVelocity = 0;
+    const moveSpeed = 190;
+
+    this.input.keyboard.on('keydown-SPACE', () => {
+      successZoneVelocity = -moveSpeed;
+    });
+
+    this.input.keyboard.on('keyup-SPACE', () => {
+      successZoneVelocity = moveSpeed;
+    });
+
+    // ✅ 여기에 타이머 저장
+    this.miniGameTimer = this.time.addEvent({
+      delay: 16,
+      loop: true,
+      callback: () => {
+        const delta = 0.016;
+
+        if (Math.random() < directionChangeProbability) {
+          markerDir *= -1;
+          markerSpeed = Phaser.Math.Between(speedMin, speedMax);
+        }
+
+        marker.y += markerSpeed * markerDir * delta;
+
+        if (marker.y < barY - barHeight / 2) markerDir = 1;
+        else if (marker.y > barY + barHeight / 2) markerDir = -1;
+
+        successZone.y += successZoneVelocity * delta;
+        const minY = barY - barHeight / 2 + successZone.height / 2;
+        const maxY = barY + barHeight / 2 - successZone.height / 2;
+        successZone.y = Phaser.Math.Clamp(successZone.y, minY, maxY);
+
+        const inZone =
+          marker.y > successZone.y - successZone.height / 2 &&
+          marker.y < successZone.y + successZone.height / 2;
+
+        gauge += inZone ? 0.5 : -0.3;
+        gauge = Phaser.Math.Clamp(gauge, 0, 100);
+        gaugeBar.height = barHeight * (gauge / 100);
+        gaugeBar.y = barY;
+
+        if (gauge >= 100 || gauge <= 0) {
+          this.miniGameTimer.remove();
+          marker.destroy();
+          successZone.destroy();
+          bar.destroy();
+          gaugeBar.destroy();
+          gaugeBarBg.destroy();
+          this.onMiniGameResult(gauge >= 100);
+        }
+      }
+    });
+  }
+
+  onMiniGameResult(success) {
+    if (success) {
+      gameData.addItem(this.fishData);
+    }
+
     const boxX = (this.sys.game.config.width - 300) / 2;
     const boxY = (this.sys.game.config.height - 190) / 2;
-    const box = this.add.rectangle(boxX, boxY, 300, 190, 0xffffff, 1).setOrigin(0, 0).setStrokeStyle(2, 0x333333);
 
-    // 제목
-    this.add.text(boxX + 150, boxY + 20, '낚시 성공!', { fontSize: '20px', color: '#000' }).setOrigin(0.5);
+    const box = this.add.rectangle(boxX, boxY, 300, 190, 0xffffff, 1)
+      .setOrigin(0, 0).setStrokeStyle(2, 0x333333);
 
-    // 내용
-    this.add.text(boxX + 20, boxY + 60, `물고기 종류: ${this.fishName}`, { fontSize: '16px', color: '#000' });
-    this.add.text(boxX + 20, boxY + 90, `크기: ${this.size}`, { fontSize: '16px', color: '#000' });
-    this.add.text(boxX + 20, boxY + 120, `가격: ${this.price}`, { fontSize: '16px', color: '#000' });
+    const title = success ? '낚시 성공!' : '물고기 놓침!';
+    this.add.text(boxX + 150, boxY + 20, title, { fontSize: '20px', color: '#000' }).setOrigin(0.5);
 
-    // 닫기 버튼
+    if (success) {
+      const { fishName, size, price } = this.fishData;
+      this.add.text(boxX + 20, boxY + 60, `물고기 종류: ${fishName}`, { fontSize: '16px', color: '#000' });
+      this.add.text(boxX + 20, boxY + 90, `크기: ${size}`, { fontSize: '16px', color: '#000' });
+      this.add.text(boxX + 20, boxY + 120, `가격: ${price}`, { fontSize: '16px', color: '#000' });
+    } else {
+      this.add.text(boxX + 20, boxY + 90, '다음엔 더 잘해보자!', { fontSize: '16px', color: '#000' });
+    }
+
     const closeBtn = this.add.text(boxX + 150, boxY + 160, '닫기', {
       fontSize: '18px',
       backgroundColor: '#888',
@@ -43,7 +142,13 @@ export default class FishingResultScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive();
 
     closeBtn.on('pointerdown', () => {
-      this.scene.stop(); // 결과창 씬 종료
+      if (this.returnSceneKey) {
+        const returnScene = this.scene.get(this.returnSceneKey);
+        if (returnScene && returnScene.input) {
+          returnScene.input.keyboard.enabled = true;
+        }
+      }
+      this.scene.stop();
     });
   }
 }

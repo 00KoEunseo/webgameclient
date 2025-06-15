@@ -17,6 +17,25 @@ export function createGround(scene) {
   return ground;
 }
 
+export function createGround2(scene) {
+  const ground = scene.physics.add.staticGroup();
+  const tileWidth = 16;
+  const tileHeight = 16;
+  const groundY = 400 - tileHeight / 2;
+  const tilesCount = Math.ceil(800 / tileWidth);
+
+  for (let i = 0; i < tilesCount; i++) {
+    const x = tileWidth / 2 + i * tileWidth;
+    const tile = scene.add.sprite(x, groundY, 'tiles', 8);
+    scene.physics.add.existing(tile, true);
+    tile.body.setSize(tileWidth, tileHeight);
+    tile.body.setOffset(0);
+    ground.add(tile);
+  }
+
+  return ground;
+}
+
 export function createPortal(scene, ground, tileIndex, heightIndex = 0, name = 'portal', destination = { x: 100, y: 360 }) {
   const tileWidth = 16;
   const tileHeight = 16;
