@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import GameScene from './phaser/GameScene';
-import SecondMapScene from './phaser/SecondMapScene';
+import SecondMapScene from './phaser/secondMapScene';
 import ThirdMapScene from './phaser/ThirdMapScene';
 import FishingResultScene from './phaser/FishingResultScene';
 
