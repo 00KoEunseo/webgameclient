@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import GameScene from './phaser/GameScene';
 import SecondMapScene from './phaser/secondMapScene';
+import FishingResultScene from './phaser/FishingResultScene';
 
 function Game() {
   const gameRef = useRef(null);
@@ -16,7 +17,7 @@ function Game() {
       height: 400,
       parent: containerRef.current,
       physics: { default: 'arcade', arcade: { debug: false } },
-      scene: [GameScene, SecondMapScene],
+      scene: [GameScene, SecondMapScene, FishingResultScene],
     };
 
     gameRef.current = new Phaser.Game(config);

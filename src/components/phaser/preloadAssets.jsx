@@ -1,9 +1,4 @@
 export default function preloadAssets(scene) {
-  scene.load.spritesheet('character', '/sprites/fisher.png', {
-    frameWidth: 32,
-    frameHeight: 32,
-  });
-
   scene.load.spritesheet('character_walk', '/sprites/Fisherman_walk.png', {
     frameWidth: 32,   
     frameHeight: 48,
@@ -31,6 +26,7 @@ export default function preloadAssets(scene) {
     frameHeight: 16,
   });
   
+  scene.load.image('gacha', '/sprites/gacha.png',);
 
   scene.load.image('tutorial', '/sprites/toriel.png');
 }
