@@ -130,28 +130,48 @@ export default class GameScene extends Phaser.Scene {
     this.isFishingCount = false;
     this.hookTimerStarted = true;
 
+    let exclamationShown = false;
+    let exclamation;
+    let failTimer;
+    let earlyFailed = false;
+
     const waitTime = Phaser.Math.Between(5000, 8000);
 
-    this.time.delayedCall(waitTime, () => {
-      const exclamation = this.add.sprite(this.player.x, this.player.y - 20, 'gacha').setScrollFactor(0);
-
-      // 실패 타이머를 변수에 저장
-      const failTimer = this.time.delayedCall(1500, () => {
-        exclamation.destroy();
+    // SPACE를 미리 누르면 즉시 낚시 실패 처리
+    const earlyKeyListener = this.input.keyboard.once('keydown-SPACE', () => {
+      if (!exclamationShown && !this.isMiniGameActive) {
+        console.log("낚시 실패 (너무 빠름)");
         this.isFishingCount = true;
         this.hookTimerStarted = false;
-        console.log("낚시 실패.");
+        earlyFailed = true; // 조기 실패 표시
+      }
+    });
+
+    this.time.delayedCall(waitTime, () => {
+      // 조기 실패했으면 아무 것도 하지 않음
+      if (earlyFailed) return;
+
+      exclamationShown = true;
+      exclamation = this.add.sprite(this.player.x, this.player.y - 20, 'gacha').setScrollFactor(0);
+
+      // 실패 타이머 시작
+      failTimer = this.time.delayedCall(1500, () => {
+        exclamation?.destroy();
+        this.isFishingCount = true;
+        this.hookTimerStarted = false;
+        console.log("낚시 실패 (시간초과)");
       });
 
+      // 낚시 성공 시 처리
       this.input.keyboard.once('keydown-SPACE', () => {
-        if (!this.isMiniGameActive) {
-          console.log("낚시성공!");
+        if (!this.isMiniGameActive && exclamationShown) {
+          console.log("낚시 성공!");
           this.isMiniGameActive = true;
-          exclamation.destroy();
-          failTimer.remove(false);  // 실패 타이머 취소
-          // 미니게임 추가 예정
+          exclamation?.destroy();
+          failTimer?.remove(false);
+
           const fishData = this.getRandomFish();
-          this.scene.launch('FishingResultScene', fishData); // 결과창 씬 띄우기
+          this.scene.launch('FishingResultScene', fishData);
 
           this.isMiniGameActive = false;
           this.isFishingCount = true;
@@ -160,7 +180,6 @@ export default class GameScene extends Phaser.Scene {
       });
     }, [], this);
   }
-
   update() {
     this.isOverPortal = false;
     checkOverPortal(this);
