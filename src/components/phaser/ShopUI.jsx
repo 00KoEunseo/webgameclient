@@ -343,7 +343,7 @@ export default class ShopUI {
       rodListTexts,
       fishListTexts,
     } = this;
-    const gold = Number(gameData.getGold()) || 0;
+    const gold =gameData.getGold();
 
     goldText.setText(`골드: ${gold}`);
 
