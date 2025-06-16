@@ -63,7 +63,7 @@ class GameData {
   }
 
   addGold(amount) {
-    this.gold += amount;
+    this.gold += Number(amount);
   }
 
   subtractGold(amount) {

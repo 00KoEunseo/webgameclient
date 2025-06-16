@@ -45,8 +45,8 @@ export default class ShopUI {
     {
         name: '강철 낚시대',
         price: 30000,
-        description: '강철 소재 낚시대\n판정박스 + 40%\n게이지 증가 + 40%',
-        speed: 0,
+        description: '강철 소재 낚시대\n속도 + 50%\n판정박스 + 40%\n게이지 증가 + 30%',
+        speed: 50,
         upBoxSize: 40,
         gaugeUp: 40,
         gaugeDown: 0,
@@ -54,8 +54,8 @@ export default class ShopUI {
     {
         name: '경량 철제 낚시대',
         price: 50000,
-        description: '경량화된 철제 낚시대\n속도 + 60%\n판정박스 + 30%\n게이지 증가 + 20%',
-        speed: 60,
+        description: '경량화된 철제 낚시대\n속도 + 70%\n판정박스 + 30%\n게이지 증가 + 40%',
+        speed: 70,
         upBoxSize: 30,
         gaugeUp: 20,
         gaugeDown: 0,
@@ -63,28 +63,28 @@ export default class ShopUI {
     {
         name: '강화 철제 낚시대',
         price: 80000,
-        description: '강화 처리된 철제 낚시대\n속도 + 35%\n판정박스 + 60%\n게이지 증가 + 20%\n게이지 감소 - 50%',
-        speed: 35,
+        description: '강화 처리된 철제 낚시대\n속도 + 55%\n판정박스 + 60%\n게이지 증가 + 40%\n게이지 감소 - 50%',
+        speed: 55,
         upBoxSize: 60,
-        gaugeUp: 20,
+        gaugeUp: 40,
         gaugeDown: 50,
     },
     {
         name: '초경량 철제 낚시대',
         price: 90000,
-        description: '초경량 소재 철제 낚시대\n속도 + 80%\n판정박스 + 50%\n게이지 증가 + 30%',
+        description: '초경량 소재 철제 낚시대\n속도 + 80%\n판정박스 + 60%\n게이지 증가 + 30%',
         speed: 80,
-        upBoxSize: 50,
+        upBoxSize: 60,
         gaugeUp: 30,
         gaugeDown: 0,
     },
     {
         name: '고강도 철제 낚시대',
         price: 100000,
-        description: '고강도 합금 철제 낚시대\n속도 + 45%\n판정박스 + 60%\n게이지 증가 + 30%',
-        speed: 45,
-        upBoxSize: 60,
-        gaugeUp: 30,
+        description: '고강도 합금 철제 낚시대\n속도 + 80%\n판정박스 + 70%\n게이지 증가 + 55%',
+        speed: 80,
+        upBoxSize: 70,
+        gaugeUp: 55,
         gaugeDown: 0,
     },
     {
@@ -343,7 +343,7 @@ export default class ShopUI {
       rodListTexts,
       fishListTexts,
     } = this;
-    const gold =gameData.getGold();
+    const gold = gameData.getGold();
 
     goldText.setText(`골드: ${gold}`);
 
@@ -437,7 +437,7 @@ export default class ShopUI {
     if (this.selectedFishIndex >= inventory.length) return;
 
     const fish = inventory[this.selectedFishIndex];
-    const price = fish.price || 0;
+    const price = Number(fish.price);
 
     gameData.removeItem(this.selectedFishIndex);
     gameData.addGold(price);
