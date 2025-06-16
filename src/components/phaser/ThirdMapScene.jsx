@@ -184,7 +184,7 @@ export default class ThirdMapScene extends Phaser.Scene {
       return {
         fishName: fish.name,
         size: `${size} cm`,
-        price: fish.pricePerCm === 0 ? '0 원' : `${price.toLocaleString()} 원`,
+        price: price,
         isTrash: fish.pricePerCm === 0,
       };
     };
