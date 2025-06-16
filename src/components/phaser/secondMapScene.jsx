@@ -88,7 +88,7 @@ export default class SecondMapScene extends Phaser.Scene {
 
     this.ground = createGround2(this);
     this.portals = [];
-    this.portals.push(createPortal(this, this.ground, 4, 0, 'portal2', { x: 720, y: 360 }));
+    this.portals.push(createPortal(this, this.ground, 4, 0, 'portal2', { x: 720, y: 339 }));
     this.portals.push(createPortal(this, this.ground, 45, 0, 'portal3'));
 
     this.player = createPlayer(this, this.spawnX, this.spawnY);

@@ -7,7 +7,7 @@ export default class FishingResultScene extends Phaser.Scene {
 
   init(data) {
     this.fishData = data.fishData;
-    this.returnSceneKey = data.returnSceneKey || 'GameScene'; // 기본값 GameScene
+    this.returnSceneKey = data.returnSceneKey || 'GameScene';
   }
 
   create() {
@@ -18,14 +18,23 @@ export default class FishingResultScene extends Phaser.Scene {
   }
 
   startMiniGame() {
+    this.hasResultCalled = false;
+
     const barX = this.sys.game.config.width / 2;
     const barY = this.sys.game.config.height / 2;
     const barHeight = 200;
     const barWidth = 20;
 
+    // ✅ 장비 능력치 불러오기
+    const rodStats = gameData.getEquippedRodStats();
+
+    // ✅ 판정박스 크기 반영 (기본 30에 +%)
+    const baseZoneHeight = 30;
+    const successZoneHeight = baseZoneHeight * (1 + (rodStats.setBoxUp || 0) / 100);
+
     const bar = this.add.rectangle(barX, barY, barWidth, barHeight, 0xaaaaaa).setOrigin(0.5);
-    const successZone = this.add.rectangle(barX, barY, barWidth, 40, 0x00ff00).setOrigin(0.5);
-    const marker = this.add.rectangle(barX, barY, barWidth, 10, 0xff0000).setOrigin(0.5);
+    const successZone = this.add.rectangle(barX, barY, barWidth, successZoneHeight, 0x00ff00).setOrigin(0.5);
+    const marker = this.add.image(barX, barY, 'fishSprite').setOrigin(0.5).setScale(2, 2);
 
     let gauge = 50;
     const gaugeBarBg = this.add.rectangle(barX + 100, barY, 10, barHeight, 0x444444).setOrigin(0.5);
@@ -39,27 +48,28 @@ export default class FishingResultScene extends Phaser.Scene {
 
     let speedMin, speedMax;
     if (size <= 5) {
-    speedMin = 10;
-    speedMax = 50;
+      speedMin = 10;
+      speedMax = 50;
     } else if (size < 300) {
-    const t = (size - 5) / (300 - 5); // 0 ~ 1
-    speedMin = lerp(10, 200, t);
-    speedMax = lerp(50, 400, t);
+      const t = (size - 5) / (300 - 5);
+      speedMin = lerp(10, 200, t);
+      speedMax = lerp(50, 400, t);
     } else if (size < 500) {
-    const t = (size - 300) / (500 - 300); // 0 ~ 1
-    speedMin = lerp(200, 400, t);
-    speedMax = lerp(400, 750, t);
+      const t = (size - 300) / (500 - 300);
+      speedMin = lerp(200, 400, t);
+      speedMax = lerp(400, 750, t);
     } else {
-    speedMin = 400;
-    speedMax = 750;
+      speedMin = 400;
+      speedMax = 750;
     }
 
     let markerSpeed = Phaser.Math.Between(speedMin, speedMax);
     let markerDir = Phaser.Math.Between(0, 1) === 0 ? -1 : 1;
     const directionChangeProbability = 0.02;
 
+    // ✅ 장비 효과 반영한 이동 속도
+    const moveSpeed = 100 * (1 + (rodStats.setSpeedUp || 0) / 100);
     let successZoneVelocity = 0;
-    const moveSpeed = 190;
 
     this.input.keyboard.on('keydown-SPACE', () => {
       successZoneVelocity = -moveSpeed;
@@ -69,7 +79,6 @@ export default class FishingResultScene extends Phaser.Scene {
       successZoneVelocity = moveSpeed;
     });
 
-    // ✅ 여기에 타이머 저장
     this.miniGameTimer = this.time.addEvent({
       delay: 16,
       loop: true,
@@ -95,12 +104,17 @@ export default class FishingResultScene extends Phaser.Scene {
           marker.y > successZone.y - successZone.height / 2 &&
           marker.y < successZone.y + successZone.height / 2;
 
-        gauge += inZone ? 0.5 : -0.3;
+        // ✅ 장비 효과 반영한 게이지 증감량 계산
+        const gaugeGain = 0.5 * (1 + (rodStats.gaugeUp || 0) / 100);
+        const gaugeLoss = 0.5 * (1 - (rodStats.gaugeDown || 0) / 100);
+
+        gauge += inZone ? gaugeGain : -gaugeLoss;
         gauge = Phaser.Math.Clamp(gauge, 0, 100);
         gaugeBar.height = barHeight * (gauge / 100);
         gaugeBar.y = barY;
 
-        if (gauge >= 100 || gauge <= 0) {
+        if ((gauge >= 100 || gauge <= 0) && !this.hasResultCalled) {
+          this.hasResultCalled = true;
           this.miniGameTimer.remove();
           marker.destroy();
           successZone.destroy();
@@ -139,10 +153,10 @@ export default class FishingResultScene extends Phaser.Scene {
     const closeBtn = this.add.text(boxX + 150, boxY + 160, '닫기', {
       fontSize: '18px',
       backgroundColor: '#888',
-      padding: { x: 10, y: 5 },
       color: '#fff',
       align: 'center',
-      fixedWidth: 80
+      fixedWidth: 80,
+      padding: { top: 6, bottom: 2 }
     }).setOrigin(0.5).setInteractive();
 
     closeBtn.on('pointerdown', () => {

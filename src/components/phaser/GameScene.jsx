@@ -18,6 +18,10 @@ export default class GameScene extends Phaser.Scene {
     this.isHookActive = false;
     this.hookTimerStarted = false;
     this.isMiniGameActive = false;
+
+    this.lastEnterStoreToggleTime = 0;  // 마지막 토글 시간 (ms)
+    this.enterStoreCooldown = 300;      // 쿨타임 300ms (조절 가능)
+
     this.fishDatabase = [
       // 🎣 일반 물고기 25종
       { name: '광어', minSize: 30, maxSize: 70, pricePerCm: 150 },
@@ -44,7 +48,7 @@ export default class GameScene extends Phaser.Scene {
       { name: '삼치', minSize: 60, maxSize: 120, pricePerCm: 115 },
       { name: '빙어', minSize: 5, maxSize: 10, pricePerCm: 300 },
       { name: '줄돔', minSize: 15, maxSize: 30, pricePerCm: 150 },
-      { name: '청상어', minSize: 100, maxSize: 200, pricePerCm: 0, priceCalc: (size) => 100000 + size * 10 }, // 보스급
+      { name: '청상어', minSize: 100, maxSize: 200, pricePerCm: 240}, // 보스급
 
       // 🗑️ 쓰레기 5종
       { name: '낡은 장화', minSize: 10, maxSize: 10, pricePerCm: 0 },
@@ -68,6 +72,14 @@ export default class GameScene extends Phaser.Scene {
     // UIManager 생성
     this.uiManager = new UIManager(this);
 
+    const centerX = this.cameras.main.width / 2;
+    const centerY = this.cameras.main.height / 2;
+
+    //this.tutorialImage = this.add.image(centerX, centerY-40, 'tutorial');
+    //this.tutorialImage.setOrigin(0.5);
+
+    //this.add.image(100, 353, 'fishing_shop').setOrigin(0.5, 0.5);
+
     // 인벤토리에 게임데이터 연동
     this.uiManager.inventoryManager.refreshList();
 
@@ -83,7 +95,8 @@ export default class GameScene extends Phaser.Scene {
       right: Phaser.Input.Keyboard.KeyCodes.RIGHT,
       jump: Phaser.Input.Keyboard.KeyCodes.UP,
       useportal: Phaser.Input.Keyboard.KeyCodes.DOWN,
-      hook: Phaser.Input.Keyboard.KeyCodes.SPACE
+      hook: Phaser.Input.Keyboard.KeyCodes.SPACE,
+      enterstore: Phaser.Input.Keyboard.KeyCodes.ENTER
     });
 
     // isCanHook 상태일 때 낚시 가능.
@@ -93,24 +106,62 @@ export default class GameScene extends Phaser.Scene {
       });
     }
 
+    const platform = this.add.rectangle(469, 383, 700, 40, 0x000000, 0).setOrigin(0.5);
+    this.physics.add.existing(platform, true); 
+
+    const storebox = this.add.rectangle(485, 343, 110, 40, 0x000000, 0).setOrigin(0.5);
+    this.physics.add.existing(storebox, true); 
+
     this.ground = createGround(this);
+    this.add.image(120, 361, 'fishing_hut').setOrigin(0.5, 0.5);
     this.portals = [];
-    this.portals.push(createPortal(this, this.ground, 46, 0, 'portal'));
+    this.portals.push(createPortal(this, this.ground, 46, 1.3, 'portal'));
+    
+    this.add.image(500, 332, 'fishing_shop').setOrigin(0.5, 0.5);
+    this.add.sprite(262, 388, 'pier_tiles', 1).setOrigin(0.5, 0.5);
+    this.add.sprite(326, 388, 'pier_tiles', 1).setOrigin(0.5, 0.5);
+    this.add.sprite(390, 388, 'pier_tiles', 1).setOrigin(0.5, 0.5);
+    this.add.sprite(454, 388, 'pier_tiles', 1).setOrigin(0.5, 0.5);
+    this.add.sprite(518, 388, 'pier_tiles', 1).setOrigin(0.5, 0.5);
+    this.add.sprite(518, 388, 'pier_tiles', 1).setOrigin(0.5, 0.5);
+    this.add.sprite(582, 388, 'pier_tiles', 1).setOrigin(0.5, 0.5);
+    this.add.sprite(646, 388, 'pier_tiles', 1).setOrigin(0.5, 0.5);
+    this.add.sprite(710, 388, 'pier_tiles', 1).setOrigin(0.5, 0.5);
+    this.add.sprite(774, 388, 'pier_tiles', 1).setOrigin(0.5, 0.5);
+    for (let i = 0; i < 7; i++) {
+      this.add.sprite(174 + i * 96, 398, 'water', 0).setOrigin(0.5, 0.5);
+    }
+    this.add.sprite(198, 368, 'tiles', 10).setOrigin(0.5, 0.5);
+    this.add.sprite(206, 368, 'tiles', 10).setOrigin(0.5, 0.5);
+
+    this.add.sprite(230, 388, 'pier_tiles', 0).setOrigin(0.5, 0.5);
+    this.add.sprite(294, 388, 'pier_tiles', 0).setOrigin(0.5, 0.5);
+    this.add.sprite(358, 388, 'pier_tiles', 0).setOrigin(0.5, 0.5);
+    this.add.sprite(422, 388, 'pier_tiles', 0).setOrigin(0.5, 0.5);
+    this.add.sprite(486, 388, 'pier_tiles', 0).setOrigin(0.5, 0.5);
+    this.add.sprite(550, 388, 'pier_tiles', 0).setOrigin(0.5, 0.5);
+    this.add.sprite(550, 388, 'pier_tiles', 0).setOrigin(0.5, 0.5);
+    this.add.sprite(614, 388, 'pier_tiles', 0).setOrigin(0.5, 0.5);
+    this.add.sprite(678, 388, 'pier_tiles', 0).setOrigin(0.5, 0.5);
+    this.add.sprite(742, 388, 'pier_tiles', 0).setOrigin(0.5, 0.5);
+    this.add.sprite(806, 388, 'pier_tiles', 0).setOrigin(0.5, 0.5);
+
 
     this.player = createPlayer(this, this.spawnX, this.spawnY);
 
     this.physics.add.collider(this.player, this.ground);
+    this.physics.add.collider(this.player, platform);
 
     this.otherPlayers = this.add.group();
     this.isOverPortal = false;
-    const centerX = this.cameras.main.width / 2;
-    const centerY = this.cameras.main.height / 2;
-
-    this.tutorialImage = this.add.image(centerX, centerY, 'tutorial');
-    this.tutorialImage.setOrigin(0.5);
+    this.isOverStore = false;
 
     this.physics.add.overlap(this.player, this.portals, () => {
       this.isOverPortal = true;
+    });
+
+    this.physics.add.overlap(this.player, storebox, () => {
+      this.isOverStore = true;
     });
 
     setupSocket(this);
@@ -202,14 +253,23 @@ export default class GameScene extends Phaser.Scene {
     }, [], this);
   }
 
-  update() {
+  update(time, delta) {
     this.isOverPortal = false;
+    this.isOverStore = false;
     checkOverPortal(this);
 
     if (this.isHookActive && !this.hookTimerStarted && this.isFishingCount) {
       this.startFishingTimer();
     }
 
-    handleInput(this, this.player, this.keys, this.isOverPortal);
+    if (this.keys.enterstore.isDown) {
+      const now = this.time.now;  // Phaser 내부 시간 (ms)
+      if (now - this.lastEnterStoreToggleTime > this.enterStoreCooldown) {
+        this.uiManager.shopUI.toggle();
+        this.lastEnterStoreToggleTime = now;
+      }
+    }
+
+    handleInput(this, this.player, this.keys, this.isOverPortal, this.isOverStore);
   }
 }
