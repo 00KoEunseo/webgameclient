@@ -24,7 +24,7 @@ class GameData {
 
     this.equipRod('기본 낚시대1');
 
-    this.gold = 1000000;
+    this.gold = 0;
   }
 
   equipRod(rodName) {
